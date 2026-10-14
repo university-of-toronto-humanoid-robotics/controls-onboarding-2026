@@ -22,7 +22,7 @@ from sim_core import JOINT_NAMES, Teleop
 # Task 3 operator settings. Mentors may tune these. They are the "slow, delayed,
 # quantized" command channel you control the arm through.
 # ---------------------------------------------------------------------------
-CONTROL_PERIOD = 0.25  # s: your command is sampled only once per control step
+CONTROL_PERIOD = 0.2  # s: your command is sampled only once per control step
 COMMAND_DELAY = 0.30   # s: each sampled command takes this long to reach the arm
 #                       shoulder  elbow   gripper
 EPS_POSITION = (0.05,    0.05,   0.005)  # dead-band: rad, rad, m per key press

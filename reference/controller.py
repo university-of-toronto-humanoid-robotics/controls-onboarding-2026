@@ -9,10 +9,10 @@ import numpy as np
 
 #                   kp      ki     kd
 POSITION_GAINS = {
-    "shoulder":     (40.0,  20.0,  2.0),
-    "elbow":        (20.0,  10.0,  1.0),
-    "finger_left":  (200.0, 0.0,   2.0),
-    "finger_right": (200.0, 0.0,   2.0),
+    "shoulder":     (40.0,  0.0,  2.0),
+    "elbow":        (20.0,  0.0,  1.0),
+    "finger_left":  (2000.0, 0.0,   2.0),
+    "finger_right": (2000.0, 0.0,   2.0),
 }
 
 #                   kp      ki     kd

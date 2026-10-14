@@ -120,7 +120,7 @@ Gains are in `POSITION_GAINS` / `VELOCITY_GAINS` at the top of `controller.py`, 
 
 **Two controllers.** You write two classes: `ArmPID` for the shoulder and elbow (hinges, output in N·m) and `GripperPID` for the two fingers (slides, output in N). Each joint gets its **own instance** of its class, so it has its own gains and its own integral and previous-error state. The gripper has a different job from the arm: it squeezes an object it can't move through, instead of tracking free motion. You may end up with a different law for each class.
 
-Things to get right (your mentor will ask about them):
+Things to know:
 
 1. **Derivative kick.** In Task 3 the setpoint jumps in steps. If you differentiate the error, what happens to `de/dt` at each step? In position mode, the setpoint is piecewise constant, so `de/dt = −q̇` between steps. Use that.
 2. **Integral windup.** If the motor saturates (or the gripper is squeezing the peg and can't close), the integral keeps growing. What happens when you let go? Add an anti-windup scheme.
@@ -189,16 +189,7 @@ It also shows the **grip force** on the peg and a **task timer**. The timer star
 
 ### The experiment (this is the point of onboarding)
 
-Fill in this table and bring it to your mentor. Do at least 2 runs per row.
-
-| Mode | Shoulder/elbow `Kp` | Ki, Kd | Time to insert (s) | # drops | Notes (oscillation, sag, overshoot, …) |
-|---|---|---|---|---|---|
-| position | low (e.g. 5 / 3) | | | | |
-| position | medium (e.g. 20 / 10) | | | | |
-| position | high (e.g. 80 / 40) | | | | |
-| velocity | low | | | | |
-| velocity | medium | | | | |
-| velocity | high | | | | |
+Run the experiment in different modes with different gains.
 
 Questions to answer:
 
@@ -221,14 +212,3 @@ Questions to answer:
 | Arm slowly sags in position mode | No integral term. That is expected behavior; explain it. |
 | The peg slips out while moving the gantry | The gantry accelerates, so the arm swings. Squeeze harder (finger gains) or move gently. |
 | Window doesn't open on Linux | `pip install glfw` needs a system OpenGL; try `sudo apt install libglfw3 libgl1`. |
-
----
-
-## 7. For mentors
-
-- **Reference solution:** `reference/scene.xml` (Task 1) and `reference/controller.py` (Task 2). Try it with
-  `python claw_machine.py --reference --position` or `python check_controller.py --reference --velocity`.
-  **Remove `reference/` (or keep it on a private branch) before giving the repo to new members.**
-- **Task 3 difficulty:** `CONTROL_PERIOD`, `COMMAND_DELAY`, `EPS_POSITION`, `EPS_VELOCITY`, `MAX_VELOCITY` and `BASE_SPEED` are at the top of `claw_machine.py`.
-- **Scene:** the peg and socket positions are in `scene.xml`. The success check is `sim_core.peg_inserted()`. `reference/scene.xml` is a full copy of `scene.xml` with the arm actuators added. If you change the scene, change both files.
-- The gantry is driven by two stiff `<position>` actuators in `scene.xml`. They are excluded from the Task 1 checks.
