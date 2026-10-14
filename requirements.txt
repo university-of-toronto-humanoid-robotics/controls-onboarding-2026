@@ -1,0 +1,3 @@
+mujoco>=3.2
+glfw>=2.5
+numpy>=1.24

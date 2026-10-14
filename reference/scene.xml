@@ -1,0 +1,128 @@
+<!--
+  REFERENCE SOLUTION (mentors only): scene.xml with Task 1 filled in.
+  Keep everything except the arm actuators identical to ../scene.xml.
+
+  UTHR controls onboarding: claw machine scene.
+
+  A two-link arm hangs from a gantry that slides in x and y (moved with WASD). The arm has
+  two hinge joints (shoulder, elbow) that rotate about the world y-axis, so the arm
+  swings in the x-z plane. At the end of the arm is a parallel gripper with two
+  slide joints (finger_left, finger_right). For both fingers, a positive value
+  means open.
+
+  The only actuators provided drive the gantry (stiff position servos).
+  The arm and gripper joints have NO actuators yet: adding them is Task 1,
+  in the <actuator> section near the bottom of this file.
+-->
+<mujoco model="uthr_claw_machine">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.002" integrator="implicitfast"/>
+
+  <visual>
+    <global offwidth="1280" offheight="800"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.6 0.6 0.6"/>
+    <map force="0.1"/>
+    <scale forcewidth="0.02" contactwidth="0.05" contactheight="0.01"/>
+  </visual>
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.82 0.84 0.88" rgb2="0.72 0.74 0.78"
+             width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8"/>
+    <texture name="sky" type="skybox" builtin="gradient" rgb1="0.35 0.45 0.6" rgb2="0.05 0.05 0.1"
+             width="256" height="256"/>
+    <material name="arm" rgba="0.25 0.45 0.85 1"/>
+    <material name="finger" rgba="0.9 0.9 0.92 1"/>
+    <material name="frame" rgba="0.2 0.2 0.22 1"/>
+    <material name="socket" rgba="0.3 0.7 0.35 1"/>
+    <material name="peg" rgba="0.95 0.55 0.1 1"/>
+  </asset>
+
+  <default>
+    <joint damping="0.05" armature="0.01"/>
+    <geom friction="1 0.01 0.001"/>
+    <default class="visual">
+      <geom contype="0" conaffinity="0" group="1"/>
+    </default>
+    <default class="grip">
+      <geom condim="4" friction="1.5 0.02 0.001" solref="0.005 1"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 -0.5 2.5" dir="0 0.2 -1" diffuse="0.6 0.6 0.6" castshadow="true"/>
+    <geom name="floor" type="plane" size="0.7 0.7 0.05" material="grid"/>
+
+    <!-- Claw machine frame (visual only, does not collide) -->
+    <geom class="visual" type="box" pos="0  0.62 0.9" size="0.65 0.015 0.015" material="frame"/>
+    <geom class="visual" type="box" pos="0 -0.62 0.9" size="0.65 0.015 0.015" material="frame"/>
+    <geom class="visual" type="box" pos=" 0.62 0 0.9" size="0.015 0.65 0.015" material="frame"/>
+    <geom class="visual" type="box" pos="-0.62 0 0.9" size="0.015 0.65 0.015" material="frame"/>
+    <geom class="visual" type="cylinder" fromto=" 0.62  0.62 0  0.62  0.62 0.9" size="0.012" material="frame"/>
+    <geom class="visual" type="cylinder" fromto="-0.62  0.62 0 -0.62  0.62 0.9" size="0.012" material="frame"/>
+    <geom class="visual" type="cylinder" fromto=" 0.62 -0.62 0  0.62 -0.62 0.9" size="0.012" material="frame"/>
+    <geom class="visual" type="cylinder" fromto="-0.62 -0.62 0 -0.62 -0.62 0.9" size="0.012" material="frame"/>
+
+    <!-- Gantry / arm base. Moved with WASD through the gantry position servos below. -->
+    <body name="gantry" pos="0 0 0.81">
+      <joint name="gantry_x" type="slide" axis="1 0 0" range="-0.5 0.5" damping="20"/>
+      <joint name="gantry_y" type="slide" axis="0 1 0" range="-0.5 0.5" damping="20"/>
+      <geom class="visual" type="box" size="0.06 0.06 0.025" mass="5" material="frame"/>
+
+      <body name="link1">
+        <joint name="shoulder" type="hinge" axis="0 1 0" range="-2.0 2.0"/>
+        <geom name="link1" type="capsule" fromto="0 0 0 0 0 -0.4" size="0.025" mass="0.4" material="arm"/>
+
+        <body name="link2" pos="0 0 -0.4">
+          <joint name="elbow" type="hinge" axis="0 1 0" range="-2.5 2.5"/>
+          <geom name="link2" type="capsule" fromto="0 0 0 0 0 -0.3" size="0.02" mass="0.3" material="arm"/>
+          <geom name="palm" type="box" pos="0 0 -0.315" size="0.06 0.022 0.015" mass="0.1" material="frame"/>
+
+          <body name="finger_left" pos="-0.011 0 -0.33">
+            <joint name="finger_left" type="slide" axis="-1 0 0" range="0 0.04" damping="1"/>
+            <geom name="finger_left" class="grip" type="box" pos="0 0 -0.035" size="0.006 0.018 0.035"
+                  mass="0.03" material="finger"/>
+          </body>
+          <body name="finger_right" pos="0.011 0 -0.33">
+            <joint name="finger_right" type="slide" axis="1 0 0" range="0 0.04" damping="1"/>
+            <geom name="finger_right" class="grip" type="box" pos="0 0 -0.035" size="0.006 0.018 0.035"
+                  mass="0.03" material="finger"/>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- The object to pick up: a 3 x 3 x 8 cm peg -->
+    <body name="peg" pos="0.2 0 0.04">
+      <freejoint name="peg"/>
+      <geom name="peg" class="grip" type="box" size="0.015 0.015 0.04" mass="0.05" material="peg"/>
+    </body>
+
+    <!-- The target: a socket with a 4.5 x 4.5 cm square hole, 7 cm deep -->
+    <body name="socket" pos="-0.1 0.25 0">
+      <site name="hole" pos="0 0 0.1" size="0.005" rgba="1 0 0 1"/>
+      <geom type="box" pos="0 0 0.015" size="0.07 0.07 0.015" material="socket"/>
+      <geom type="box" pos=" 0.04625 0 0.065" size="0.02375 0.07 0.035" material="socket"/>
+      <geom type="box" pos="-0.04625 0 0.065" size="0.02375 0.07 0.035" material="socket"/>
+      <geom type="box" pos="0  0.04625 0.065" size="0.0225 0.02375 0.035" material="socket"/>
+      <geom type="box" pos="0 -0.04625 0.065" size="0.0225 0.02375 0.035" material="socket"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Provided: gantry servos for WASD. Do not change these two. -->
+    <position name="gantry_x" joint="gantry_x" kp="3000" dampratio="1" ctrlrange="-0.5 0.5"/>
+    <position name="gantry_y" joint="gantry_y" kp="3000" dampratio="1" ctrlrange="-0.5 0.5"/>
+
+    <!-- Task 1 solution: ideal torque/force sources (force = 1 * ctrl, no dynamics, no bias). -->
+    <general name="shoulder"     joint="shoulder"     dyntype="none" gaintype="fixed" gainprm="1" biastype="none" ctrllimited="true" ctrlrange="-10 10"/>
+    <general name="elbow"        joint="elbow"        dyntype="none" gaintype="fixed" gainprm="1" biastype="none" ctrllimited="true" ctrlrange="-6 6"/>
+    <general name="finger_left"  joint="finger_left"  dyntype="none" gaintype="fixed" gainprm="1" biastype="none" ctrllimited="true" ctrlrange="-10 10"/>
+    <general name="finger_right" joint="finger_right" dyntype="none" gaintype="fixed" gainprm="1" biastype="none" ctrllimited="true" ctrlrange="-10 10"/>
+  </actuator>
+
+  <keyframe>
+    <!-- gantry_x, gantry_y, shoulder, elbow, finger_left, finger_right, peg (x y z qw qx qy qz) -->
+    <key name="home" qpos="-0.3 0  -0.9 0.9 0.03 0.03  0.2 0 0.04 1 0 0 0"/>
+  </keyframe>
+</mujoco>
